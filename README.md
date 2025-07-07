@@ -69,6 +69,10 @@ The system automates email triage and reply tasks using the following components
 5. Set up and authorize Gmail, OpenAI, and Google Sheets credentials within n8n.
 6. Start the workflow and test it by sending example emails.
 
+## How to Run
+
+1. Open terminal and type n8n (n8n is running on port 5678 (locally))
+
 ## Features
 
 - Automatically detects sponsorship-related emails.
