@@ -1,0 +1,433 @@
+{
+  "name": "Sponsor Reply",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "event": "=messageReceived",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -460,
+        -160
+      ],
+      "id": "c483ee37-2275-498e-892a-b6961100f63b",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ju3FY2elCxTdjzN9",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1a5e9d4-d395-4850-aed9-40600a65ff15",
+              "name": "Email Context",
+              "value": "=From: {{ $json.From }}\n\nSubject: {{ $json.Subject }}\n\nEmail Body: {{ $json.snippet }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        -160
+      ],
+      "id": "300d1a66-b39b-4f87-82a8-664ed3f2513e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Your task is to determine whether an email is related to a sponsorship deal or not.\n\nRespond ONLY with a valid JSON object in this exact format:\n{\n  \"isSponsorship\": true or false,\n  \"reasoning\": \"A short explanation here\"\n}\n\nDo not include any other text, headers, or formatting. Only provide the JSON object.\n\n{{ $json['Email Context'] }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        -160
+      ],
+      "id": "a2f5c166-b634-4c23-ae05-36d05659ef1a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -120,
+        60
+      ],
+      "id": "5bc959f3-f14a-40e4-927b-081c31f6f014",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "dfjQ8rhPeYSxWwhx",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        340,
+        280
+      ],
+      "id": "de2cfb19-4385-492d-9fce-575d44d51370",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "dfjQ8rhPeYSxWwhx",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"isSponsorship\": {\n\t\t\t\"type\": \"boolean\"\n\t\t},\n\t\t\"reasoning\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n\t}\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        280,
+        100
+      ],
+      "id": "d94328da-5699-445a-bee2-2e1a6975db87",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1b01fa7e-cdf5-4387-9bc1-20f14a680497",
+              "leftValue": "={{ $json.output.isSponsorship }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        340,
+        -160
+      ],
+      "id": "a8e56d42-6a5b-4aaf-8780-e63b245af76e",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -60
+      ],
+      "id": "fe87d305-a0fd-4741-a83e-e59814a1e234",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=**Role:**\nYou work for a YouTube channel called *AI with Darshika*.\nYour task is to respond to sponsorship inquiries by drafting a reply email.\n\n**Task:**\nCarefully review the email context below and write a friendly and professional email. Return only the **email body in HTML format** — do **not** include a header, and do not wrap it in any Markdown code blocks. The email should include details about sponsorship costs and conditions, and also mention that we are committed to maintaining the integrity of our channel, only partnering with sponsors whose products align with our audience’s interests, and that we personally endorse.\n\n**Conditions:**\n\n### Sponsorship Terms for the YouTube Channel *AI with Darshika*\n\n#### **Channel Overview**\n- **Channel Name:** *AI with Darshika*\n- **Subscribers:** 15,000+\n- **Average Views per Video:** 3,000 – 10,000\n- **Content Focus:** Artificial Intelligence\n\n#### **Sponsorship Pricing**\n- **Standalone Video:** $850 – $1,400\n- **Integrated Sponsorship Mention (60 seconds):** $650\n\n#### **Additional Info**\n*AI with Darshika* only accepts sponsors that make sense for its target audience. In general, the channel rejects anything that does not provide real value to viewers and does not promote products that the creator does not personally use.\n",
+              "role": "system"
+            },
+            {
+              "content": "=Email Context: {{ $('Edit Fields').item.json['Email Context'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        560,
+        -260
+      ],
+      "id": "a7fa2f05-4792-4857-9cf5-9d14925643f6",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "dfjQ8rhPeYSxWwhx",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "message": "={{ $json.message.content }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        -260
+      ],
+      "id": "86078b2f-e46d-4ecc-bea9-851a2d535731",
+      "name": "Reply to a message",
+      "webhookId": "e6167c63-f8f3-4ce1-ada5-b2b907ba98ba",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ju3FY2elCxTdjzN9",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1hCi2rDSssNwx37SrECE1jOMz8q6RWZIsuuBL2tnv3zg",
+          "mode": "list",
+          "cachedResultName": "Sponsorship Emails",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hCi2rDSssNwx37SrECE1jOMz8q6RWZIsuuBL2tnv3zg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hCi2rDSssNwx37SrECE1jOMz8q6RWZIsuuBL2tnv3zg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "From": "={{ $('Gmail Trigger').item.json.From }}",
+            "Subject": "={{ $('Gmail Trigger').item.json.Subject }}",
+            "Body": "={{ $('Gmail Trigger').item.json.snippet }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "From",
+              "displayName": "From",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Body",
+              "displayName": "Body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1100,
+        -260
+      ],
+      "id": "99b37ae6-0c0f-448e-a8d6-93d615366af6",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wia7yPkEshpqIPwF",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to a message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d375cc0a-a506-4259-a5a0-96a37ae18dc3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1e03f75519b9c886e79ba3b0477facefffa5d5969d514e42c1b9336e9effac7d"
+  },
+  "id": "7X0CH9bpc6S95O2i",
+  "tags": []
+}
