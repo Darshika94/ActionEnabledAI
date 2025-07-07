@@ -18,6 +18,8 @@ The system automates email triage and reply tasks using the following components
 
 ## Workflow Actions Performed
 
+![Workflow Diagram](./Flowchart.png)
+
 1. **Gmail Trigger**
    - Listens for new incoming emails in the Gmail inbox.
 
